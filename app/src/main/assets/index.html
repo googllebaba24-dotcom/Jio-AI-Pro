@@ -97,6 +97,7 @@
             border-radius: 4px; 
             cursor: pointer;
             box-shadow: 0 0 5px #00ff00;
+            pointer-events: auto;
         }
         
         .hide-btn { background: #ffaa00; color: #000; }
@@ -106,15 +107,14 @@
 <body>
 
     <div class="circle-panel">
-        <!-- DIRECT PREDICTOR PANEL (NO KEY REQUIRED) -->
         <div class="title">JIO AI ANALYZER</div>
-        <div class="sub-title">PER: <span id="period-num" style="color:cyan;">0000</span> | <span id="timer" style="color:#ff5555;">00:00</span></div>
+        <div class="sub-title">PER: <span id="period-num" style="color:cyan;">00000</span> | <span id="timer" style="color:#ff5555;">00:00</span></div>
         
         <div class="result-box" id="prediction">ANALYZING</div>
         <div style="font-size: 7.5px; color: #aaa;">LUCKY DIGIT</div>
         <div class="number-box" id="lucky-number">-</div>
 
-        <div class="analytics-info" id="analytics-status">Smart Matrix Active</div>
+        <div class="analytics-info" id="analytics-status">Sync Active</div>
 
         <div class="btn-group">
             <button class="hide-btn" onclick="Android.minimizePanel()">HIDE</button>
@@ -129,6 +129,8 @@
         function startEngine() {
             function runClock() {
                 const now = new Date();
+                
+                // Use UTC time to maintain absolute sync with standard lottery backend servers
                 const year = now.getUTCFullYear();
                 const month = String(now.getUTCMonth() + 1).padStart(2, '0');
                 const day = String(now.getUTCDate()).padStart(2, '0');
@@ -137,11 +139,15 @@
                 const minutes = now.getUTCMinutes();
                 const seconds = now.getUTCSeconds();
 
+                // Standard 1-minute interval sequence calculation
                 const totalMinsToday = hours * 60 + minutes;
-                const incrementalId = String(totalMinsToday).padStart(4, '0');
-                const fullPeriodId = `${year}${month}${day}000${incrementalId}`;
+                const periodIndex = 10000 + totalMinsToday;
+                
+                // Exact format matching the game screen (YYYYMMDD + sequence)
+                const fullPeriodId = `${year}${month}${day}${periodIndex}`;
 
-                document.getElementById("period-num").innerText = fullPeriodId.slice(-5);
+                // Displaying exact last 6 digits for clear tracking inside the circle
+                document.getElementById("period-num").innerText = fullPeriodId.slice(-6);
 
                 let secLeft = 59 - (seconds % 60);
                 let secStr = secLeft < 10 ? "0" + secLeft : secLeft;
@@ -175,12 +181,12 @@
 
                 if (allBig) {
                     correctionFactor = -5;
-                    document.getElementById('analytics-status').innerText = "Signal: Reversal Shift";
+                    document.getElementById('analytics-status').innerText = "Signal: Reversal";
                 } else if (allSmall) {
                     correctionFactor = 5;
-                    document.getElementById('analytics-status').innerText = "Signal: Reversal Shift";
+                    document.getElementById('analytics-status').innerText = "Signal: Reversal";
                 } else {
-                    document.getElementById('analytics-status').innerText = "Smart Matrix Active";
+                    document.getElementById('analytics-status').innerText = "Sync Active";
                 }
             }
 
@@ -198,7 +204,6 @@
             document.getElementById('lucky-number').innerText = luckyNum;
         }
 
-        // App khulte hi bina kisi key ke direct engine start ho jayega
         startEngine();
     </script>
 </body>
