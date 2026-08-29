@@ -114,7 +114,7 @@
         <div style="font-size: 7.5px; color: #aaa;">LUCKY DIGIT</div>
         <div class="number-box" id="lucky-number">-</div>
 
-        <div class="analytics-info" id="analytics-status">Sync Active</div>
+        <div class="analytics-info" id="analytics-status">IST Live Sync</div>
 
         <div class="btn-group">
             <button class="hide-btn" onclick="Android.minimizePanel()">HIDE</button>
@@ -130,23 +130,25 @@
             function runClock() {
                 const now = new Date();
                 
-                // Use UTC time to maintain absolute sync with standard lottery backend servers
-                const year = now.getUTCFullYear();
-                const month = String(now.getUTCMonth() + 1).padStart(2, '0');
-                const day = String(now.getUTCDate()).padStart(2, '0');
-                
-                const hours = now.getUTCHours();
-                const minutes = now.getUTCMinutes();
-                const seconds = now.getUTCSeconds();
+                // Convert current time to Indian Standard Time (IST -> UTC + 5:30)
+                const istOffset = 5.5 * 60 * 60 * 1000;
+                const istDate = new Date(now.getTime() + (now.getTimezoneOffset() * 60000) + istOffset);
 
-                // Standard 1-minute interval sequence calculation
+                const year = istDate.getFullYear();
+                const month = String(istDate.getMonth() + 1).padStart(2, '0');
+                const day = String(istDate.getDate()).padStart(2, '0');
+                
+                const hours = istDate.getHours();
+                const minutes = istDate.getMinutes();
+                const seconds = istDate.getSeconds();
+
+                // Exact calculation of daily minute index matching the game
                 const totalMinsToday = hours * 60 + minutes;
-                const periodIndex = 10000 + totalMinsToday;
                 
-                // Exact format matching the game screen (YYYYMMDD + sequence)
-                const fullPeriodId = `${year}${month}${day}${periodIndex}`;
+                // Exact format: YYYYMMDD000 + minute index (jaise 2026083000161)
+                const fullPeriodId = `${year}${month}${day}000${String(totalMinsToday).padStart(3, '0')}`;
 
-                // Displaying exact last 6 digits for clear tracking inside the circle
+                // Displaying exact last 6 digits matching game screen cleanly
                 document.getElementById("period-num").innerText = fullPeriodId.slice(-6);
 
                 let secLeft = 59 - (seconds % 60);
@@ -186,7 +188,7 @@
                     correctionFactor = 5;
                     document.getElementById('analytics-status').innerText = "Signal: Reversal";
                 } else {
-                    document.getElementById('analytics-status').innerText = "Sync Active";
+                    document.getElementById('analytics-status').innerText = "IST Live Sync";
                 }
             }
 
