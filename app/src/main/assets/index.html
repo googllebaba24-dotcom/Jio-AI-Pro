@@ -17,19 +17,19 @@
         .circle-panel {
             width: 210px;
             height: 210px;
-            background: rgba(8, 8, 8, 0.96);
+            background: rgba(8, 8, 8, 0.97);
             border-radius: 50%;
             border: 3px solid transparent;
-            background-image: linear-gradient(rgba(8, 8, 8, 0.96), rgba(8, 8, 8, 0.96)), linear-gradient(135deg, #00ff00, #ff0055, #00ffff);
+            background-image: linear-gradient(rgba(8, 8, 8, 0.97), rgba(8, 8, 8, 0.97)), linear-gradient(135deg, #00ff00, #ff0055, #00ffff);
             background-origin: border-box;
             background-clip: content-box, border-box;
-            box-shadow: 0 0 20px rgba(0, 255, 0, 0.6), inset 0 0 15px rgba(0, 255, 0, 0.3);
+            box-shadow: 0 0 22px rgba(0, 255, 0, 0.6), inset 0 0 15px rgba(0, 255, 0, 0.3);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             text-align: center;
-            padding: 12px;
+            padding: 15px;
             box-sizing: border-box;
             position: relative;
             animation: rotateGlow 6s linear infinite;
@@ -124,23 +124,23 @@
     <div class="circle-panel">
         <!-- LOGIN SCREEN -->
         <div id="auth-screen">
-            <div class="title">JIO AI PRO</div>
-            <div class="sub-title">SECURE GATEWAY</div>
-            <input type="text" id="key-input" placeholder="ENTER KEY" onfocus="Android.enableFocus()">
+            <div class="title">JIO AI VIP</div>
+            <div class="sub-title">ENTER KEY</div>
+            <input type="text" id="key-input" placeholder="SGOD2026" onfocus="Android.enableFocus()">
             <button onclick="verifyKey()">LOGIN</button>
             <div id="error-msg" style="color: #ff3333; font-size: 8px; margin-top: 2px;"></div>
         </div>
 
         <!-- MAIN CIRCULAR ANALYZER PANEL -->
         <div id="panel-content">
-            <div class="title">AI DEEP ANALYZER</div>
+            <div class="title">JIO AI ANALYZER</div>
             <div class="sub-title">PER: <span id="period-num" style="color:cyan;">0000</span> | <span id="timer" style="color:#ff5555;">00:00</span></div>
             
             <div class="result-box" id="prediction">ANALYZING</div>
             <div style="font-size: 7.5px; color: #aaa;">LUCKY DIGIT</div>
             <div class="number-box" id="lucky-number">-</div>
 
-            <div class="analytics-info" id="analytics-status">Model: Multi-Param Sync</div>
+            <div class="analytics-info" id="analytics-status">Smart Matrix Active</div>
 
             <div class="btn-group">
                 <button class="hide-btn" onclick="Android.minimizePanel()">HIDE</button>
@@ -152,7 +152,7 @@
     <script>
         const VALID_KEY = "SGOD2026";
         let activePeriodId = "";
-        let historicalMemory = [];
+        let memoryLog = [];
 
         function verifyKey() {
             const userKey = document.getElementById('key-input').value.trim();
@@ -161,31 +161,26 @@
             if (userKey === VALID_KEY) {
                 document.getElementById('auth-screen').style.display = 'none';
                 document.getElementById('panel-content').style.display = 'block';
-                startAdvancedEngine();
+                startEngine();
             } else {
                 errorMsg.innerText = "❌ Invalid Key!";
             }
         }
 
-        function startAdvancedEngine() {
-            let baseTime = Date.now() - 180000;
-            for (let i = 5; i > 0; i--) {
-                let dummyPeriod = "202608301000" + (10000 + Math.floor((baseTime - (i * 60000)) / 60000));
-                let h = Math.abs(stringHashCode(dummyPeriod));
-                historicalMemory.push({ period: dummyPeriod, isBig: h % 2 === 0 });
-            }
-
+        function startEngine() {
             function runClock() {
                 const now = new Date();
                 const year = now.getUTCFullYear();
                 const month = String(now.getUTCMonth() + 1).padStart(2, '0');
                 const day = String(now.getUTCDate()).padStart(2, '0');
+                
                 const hours = now.getUTCHours();
                 const minutes = now.getUTCMinutes();
                 const seconds = now.getUTCSeconds();
 
-                const totalMins = hours * 60 + minutes;
-                const fullPeriodId = `${year}${month}${day}1000${10001 + totalMins}`;
+                const totalMinsToday = hours * 60 + minutes;
+                const incrementalId = String(totalMinsToday).padStart(4, '0');
+                const fullPeriodId = `${year}${month}${day}000${incrementalId}`;
 
                 document.getElementById("period-num").innerText = fullPeriodId.slice(-5);
 
@@ -195,7 +190,7 @@
 
                 if (fullPeriodId !== activePeriodId) {
                     activePeriodId = fullPeriodId;
-                    computeAdvancedAnalysis(fullPeriodId);
+                    calculateSmartPrediction(fullPeriodId);
                 }
             }
             setInterval(runClock, 1000);
@@ -210,29 +205,34 @@
             return hash;
         }
 
-        function computeAdvancedAnalysis(period) {
-            let recentBigCount = historicalMemory.slice(-4).filter(x => x.isBig).length;
-            let antiStreakShift = 0;
+        function calculateSmartPrediction(period) {
+            let rawHash = Math.abs(stringHashCode(period));
+            
+            let correctionFactor = 0;
+            if (memoryLog.length >= 3) {
+                let lastThreeResults = memoryLog.slice(-3);
+                let allBig = lastThreeResults.every(val => val === true);
+                let allSmall = lastThreeResults.every(val => val === false);
 
-            if (recentBigCount >= 3) {
-                antiStreakShift = -3;
-                document.getElementById('analytics-status').innerText = "Signal: Reversal Trend";
-            } else if (recentBigCount <= 1) {
-                antiStreakShift = 3;
-                document.getElementById('analytics-status').innerText = "Signal: Momentum Sync";
-            } else {
-                document.getElementById('analytics-status').innerText = "Signal: Stable Matrix";
+                if (allBig) {
+                    correctionFactor = -5;
+                    document.getElementById('analytics-status').innerText = "Signal: Reversal Shift";
+                } else if (allSmall) {
+                    correctionFactor = 5;
+                    document.getElementById('analytics-status').innerText = "Signal: Reversal Shift";
+                } else {
+                    document.getElementById('analytics-status').innerText = "Smart Matrix Active";
+                }
             }
 
-            let rawHash = Math.abs(stringHashCode(period));
-            let compositeScore = rawHash + antiStreakShift;
-            let isBig = compositeScore % 2 !== 0;
+            let balancedValue = rawHash + correctionFactor;
+            let isBig = balancedValue % 2 === 0;
+
+            memoryLog.push(isBig);
+            if (memoryLog.length > 10) memoryLog.shift();
 
             let resultText = isBig ? "BIG 🟢" : "SMALL 🔴";
-            let luckyNum = isBig ? (5 + (compositeScore % 5)) : (compositeScore % 5);
-
-            historicalMemory.push({ period: period, isBig: isBig });
-            if (historicalMemory.length > 15) historicalMemory.shift();
+            let luckyNum = isBig ? (5 + (balancedValue % 5)) : (balancedValue % 5);
 
             document.getElementById('prediction').innerText = resultText;
             document.getElementById('prediction').style.color = isBig ? "#00ff00" : "#ff3333";
