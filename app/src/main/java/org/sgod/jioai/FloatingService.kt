@@ -13,13 +13,13 @@ import android.view.View
 import android.view.WindowManager
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
-import android.widget.LinearLayout
+import android.widget.FrameLayout
 import android.widget.TextView
 
 class FloatingService : Service() {
 
     private lateinit var windowManager: WindowManager
-    private lateinit var container: LinearLayout
+    private lateinit var container: FrameLayout
     private lateinit var bubbleView: TextView
     private lateinit var params: WindowManager.LayoutParams
     private lateinit var webView: WebView
@@ -32,27 +32,16 @@ class FloatingService : Service() {
         super.onCreate()
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
 
-        container = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
+        container = FrameLayout(this).apply {
             setBackgroundColor(Color.TRANSPARENT)
         }
-
-        val dragBar = TextView(this).apply {
-            text = "✥ JIO AI PANEL ✥"
-            setTextColor(Color.WHITE)
-            setBackgroundColor(Color.parseColor("#1f1f1f"))
-            gravity = Gravity.CENTER
-            setPadding(10, 12, 10, 12)
-            textSize = 11f
-        }
-        container.addView(dragBar)
 
         webView = WebView(this).apply {
             setBackgroundColor(Color.TRANSPARENT)
             settings.javaScriptEnabled = true
             settings.domStorageEnabled = true
             addJavascriptInterface(WebAppInterface(), "Android")
-            layoutParams = LinearLayout.LayoutParams(600, 600)
+            layoutParams = FrameLayout.LayoutParams(600, 600)
             loadUrl("file:///android_asset/index.html")
         }
         container.addView(webView)
@@ -85,7 +74,7 @@ class FloatingService : Service() {
             y = 200
         }
 
-        dragBar.setOnTouchListener(object : View.OnTouchListener {
+        webView.setOnTouchListener(object : View.OnTouchListener {
             private var initialX = 0
             private var initialY = 0
             private var initialTouchX = 0f
