@@ -62,12 +62,12 @@ class FloatingService : Service() {
             WindowManager.LayoutParams.TYPE_PHONE
         }
 
-        // Yahan FLAG_NOT_FOCUSABLE hata diya hai taaki keyboard easily khul sake
+        // FLAG_NOT_FOCUSABLE aur FLAG_NOT_TOUCH_MODAL lagane se background ki apps par touch kaam karta rahega
         params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
             layoutFlag,
-            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.TOP or Gravity.START
@@ -75,12 +75,13 @@ class FloatingService : Service() {
             y = 200
         }
 
-        webView.setOnTouchListener(object : View.OnTouchListener {
-            private var initialX = 0
-            private var initialY = 0
-            private var initialTouchX = 0f
-            private var initialTouchY = 0f
+        // Sirf WebView ke edges ya container par drag karne se window move hogi, baaki jagah touch pass ho jayega
+        var initialX = 0
+        var initialY = 0
+        var initialTouchX = 0f
+        var initialTouchY = 0f
 
+        webView.setOnTouchListener(object : View.OnTouchListener {
             override fun onTouch(v: View, event: MotionEvent): Boolean {
                 when (event.action) {
                     MotionEvent.ACTION_DOWN -> {
@@ -88,55 +89,63 @@ class FloatingService : Service() {
                         initialY = params.y
                         initialTouchX = event.rawX
                         initialTouchY = event.rawY
-                        return true
-                    }
-                    MotionEvent.ACTION_MOVE -> {
-                        val dx = (event.rawX - initialTouchX).toInt()
-                        val dy = (event.rawY - initialTouchY).toInt()
-                        if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
-                            params.x = initialX + dx
-                            params.y = initialY + dy
-                            windowManager.updateViewLayout(container, params)
-                            return true
-                        }
+                        return false // WebView ke andar buttons (Hide/Exit) click ho sakein isliye false rakha hai
                     }
                 }
                 return false
             }
         })
 
+        // Window ko move karne ke liye container par touch handler
+        container.setOnTouchListener { _, event ->
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    initialX = params.x
+                    initialY = params.y
+                    initialTouchX = event.rawX
+                    initialTouchY = event.rawY
+                    true
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    params.x = initialX + (event.rawX - initialTouchX).toInt()
+                    params.y = initialY + (event.rawY - initialTouchY).toInt()
+                    windowManager.updateViewLayout(container, params)
+                    true
+                }
+                else -> false
+            }
+        }
+
         bubbleView.setOnTouchListener(object : View.OnTouchListener {
-            private var initialX = 0
-            private var initialY = 0
-            private var initialTouchX = 0f
-            private var initialTouchY = 0f
-            private var isMoved = false
+            private var bX = 0
+            private var bY = 0
+            private var bTouchX = 0f
+            private var bTouchY = 0f
+            private var moved = false
 
             override fun onTouch(v: View, event: MotionEvent): Boolean {
                 when (event.action) {
                     MotionEvent.ACTION_DOWN -> {
-                        initialX = params.x
-                        initialY = params.y
-                        initialTouchX = event.rawX
-                        initialTouchY = event.rawY
-                        isMoved = false
+                        bX = params.x
+                        bY = params.y
+                        bTouchX = event.rawX
+                        bTouchY = event.rawY
+                        moved = false
                         return true
                     }
                     MotionEvent.ACTION_MOVE -> {
-                        val dx = (event.rawX - initialTouchX).toInt()
-                        val dy = (event.rawY - initialTouchY).toInt()
+                        val dx = (event.rawX - bTouchX).toInt()
+                        val dy = (event.rawY - bTouchY).toInt()
                         if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
-                            isMoved = true
-                            params.x = initialX + dx
-                            params.y = initialY + dy
+                            moved = true
+                            params.x = bX + dx
+                            params.y = bY + dy
                             windowManager.updateViewLayout(bubbleView, params)
                         }
                         return true
                     }
                     MotionEvent.ACTION_UP -> {
-                        if (!isMoved) {
-                            expandPanel()
-                        }
+                        if (!moved) expandPanel()
                         return true
                     }
                 }
@@ -160,14 +169,10 @@ class FloatingService : Service() {
 
         @JavascriptInterface
         fun closeApp() {
-            // Service ko poori tarah band karne ke liye stopSelf() call kiya hai
             android.os.Handler(mainLooper).post {
                 stopSelf()
             }
         }
-
-        @JavascriptInterface
-        fun enableFocus() {}
     }
 
     private fun expandPanel() {
@@ -178,7 +183,6 @@ class FloatingService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        // App close hone par views ko screen se hamesha ke liye hata diya jayega
         if (::container.isInitialized) {
             try { windowManager.removeView(container) } catch (e: Exception) {}
         }
