@@ -62,12 +62,12 @@ class FloatingService : Service() {
             WindowManager.LayoutParams.TYPE_PHONE
         }
 
-        // Yehah FLAG_NOT_TOUCH_MODAL use kiya hai taaki input box par click karte hi keyboard khul jaye
+        // Yahan FLAG_NOT_FOCUSABLE hata diya hai taaki keyboard easily khul sake
         params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
             layoutFlag,
-            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
+            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.TOP or Gravity.START
@@ -93,7 +93,7 @@ class FloatingService : Service() {
                     MotionEvent.ACTION_MOVE -> {
                         val dx = (event.rawX - initialTouchX).toInt()
                         val dy = (event.rawY - initialTouchY).toInt()
-                        if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {
+                        if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
                             params.x = initialX + dx
                             params.y = initialY + dy
                             windowManager.updateViewLayout(container, params)
@@ -160,18 +160,14 @@ class FloatingService : Service() {
 
         @JavascriptInterface
         fun closeApp() {
-            stopSelf()
+            // Service ko poori tarah band karne ke liye stopSelf() call kiya hai
+            android.os.Handler(mainLooper).post {
+                stopSelf()
+            }
         }
 
         @JavascriptInterface
-        fun enableFocus() {
-            try {
-                params.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-                windowManager.updateViewLayout(if (isMinimized) bubbleView else container, params)
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
+        fun enableFocus() {}
     }
 
     private fun expandPanel() {
@@ -182,6 +178,7 @@ class FloatingService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        // App close hone par views ko screen se hamesha ke liye hata diya jayega
         if (::container.isInitialized) {
             try { windowManager.removeView(container) } catch (e: Exception) {}
         }
