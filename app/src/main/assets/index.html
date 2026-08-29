@@ -51,19 +51,19 @@
         .sub-title {
             font-size: 8px;
             color: #aaa;
-            margin-bottom: 3px;
+            margin-bottom: 4px;
         }
 
         .result-box {
-            font-size: 17px;
+            font-size: 18px;
             font-weight: bold;
             color: yellow;
             text-shadow: 0 0 8px yellow;
-            margin: 2px 0;
+            margin: 3px 0;
         }
 
         .number-box {
-            font-size: 19px;
+            font-size: 20px;
             font-weight: bold;
             color: cyan;
             text-shadow: 0 0 8px cyan;
@@ -79,32 +79,19 @@
             margin: 3px 0;
         }
 
-        input { 
-            width: 85%; 
-            padding: 4px; 
-            background: #000; 
-            border: 1px solid #00ff00; 
-            color: #00ff00; 
-            font-family: monospace; 
-            margin-bottom: 4px; 
-            text-align: center; 
-            font-size: 11px;
-            border-radius: 4px;
-        }
-
         .btn-group {
             display: flex;
             gap: 4px;
             width: 100%;
             justify-content: center;
-            margin-top: 3px;
+            margin-top: 4px;
         }
 
         button { 
             background: #00ff00; 
             color: #000; 
             border: none; 
-            padding: 4px 7px; 
+            padding: 4px 8px; 
             font-weight: bold; 
             font-size: 9.5px; 
             border-radius: 4px; 
@@ -114,58 +101,30 @@
         
         .hide-btn { background: #ffaa00; color: #000; }
         .close-btn { background: #cc0000; color: white; }
-
-        #panel-content { display: none; width: 100%; }
-        #auth-screen { width: 100%; display: flex; flex-direction: column; align-items: center; }
     </style>
 </head>
 <body>
 
     <div class="circle-panel">
-        <!-- LOGIN SCREEN -->
-        <div id="auth-screen">
-            <div class="title">JIO AI VIP</div>
-            <div class="sub-title">ENTER KEY</div>
-            <input type="text" id="key-input" placeholder="SGOD2026" onfocus="Android.enableFocus()">
-            <button onclick="verifyKey()">LOGIN</button>
-            <div id="error-msg" style="color: #ff3333; font-size: 8px; margin-top: 2px;"></div>
-        </div>
+        <!-- DIRECT PREDICTOR PANEL (NO KEY REQUIRED) -->
+        <div class="title">JIO AI ANALYZER</div>
+        <div class="sub-title">PER: <span id="period-num" style="color:cyan;">0000</span> | <span id="timer" style="color:#ff5555;">00:00</span></div>
+        
+        <div class="result-box" id="prediction">ANALYZING</div>
+        <div style="font-size: 7.5px; color: #aaa;">LUCKY DIGIT</div>
+        <div class="number-box" id="lucky-number">-</div>
 
-        <!-- MAIN CIRCULAR ANALYZER PANEL -->
-        <div id="panel-content">
-            <div class="title">JIO AI ANALYZER</div>
-            <div class="sub-title">PER: <span id="period-num" style="color:cyan;">0000</span> | <span id="timer" style="color:#ff5555;">00:00</span></div>
-            
-            <div class="result-box" id="prediction">ANALYZING</div>
-            <div style="font-size: 7.5px; color: #aaa;">LUCKY DIGIT</div>
-            <div class="number-box" id="lucky-number">-</div>
+        <div class="analytics-info" id="analytics-status">Smart Matrix Active</div>
 
-            <div class="analytics-info" id="analytics-status">Smart Matrix Active</div>
-
-            <div class="btn-group">
-                <button class="hide-btn" onclick="Android.minimizePanel()">HIDE</button>
-                <button class="close-btn" onclick="Android.closeApp()">EXIT</button>
-            </div>
+        <div class="btn-group">
+            <button class="hide-btn" onclick="Android.minimizePanel()">HIDE</button>
+            <button class="close-btn" onclick="Android.closeApp()">EXIT</button>
         </div>
     </div>
 
     <script>
-        const VALID_KEY = "SGOD2026";
         let activePeriodId = "";
         let memoryLog = [];
-
-        function verifyKey() {
-            const userKey = document.getElementById('key-input').value.trim();
-            const errorMsg = document.getElementById('error-msg');
-
-            if (userKey === VALID_KEY) {
-                document.getElementById('auth-screen').style.display = 'none';
-                document.getElementById('panel-content').style.display = 'block';
-                startEngine();
-            } else {
-                errorMsg.innerText = "❌ Invalid Key!";
-            }
-        }
 
         function startEngine() {
             function runClock() {
@@ -238,6 +197,9 @@
             document.getElementById('prediction').style.color = isBig ? "#00ff00" : "#ff3333";
             document.getElementById('lucky-number').innerText = luckyNum;
         }
+
+        // App khulte hi bina kisi key ke direct engine start ho jayega
+        startEngine();
     </script>
 </body>
 </html>
