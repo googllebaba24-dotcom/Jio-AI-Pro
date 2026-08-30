@@ -142,8 +142,8 @@
                 const minutes = istDate.getMinutes();
                 const seconds = istDate.getSeconds();
 
-                // Exact minute calculation with precise server offset adjustment (+6 to match exact 00167)
-                const totalMinsToday = (hours * 60) + minutes + 6;
+                // Adjusted exact minute calculation to match game's 00175 period perfectly (+1 offset instead of +6)
+                const totalMinsToday = (hours * 60) + minutes + 1;
                 
                 const fullPeriodId = `${year}${month}${day}000${String(totalMinsToday).padStart(3, '0')}`;
 
